@@ -56,7 +56,10 @@ done
 rm $HOME/.moderne/cli/maven-cache.cache 2>/dev/null || true
 
 if [ -f "../recipes.conf" ]; then
-    echo "Running Moderne CLI transformations..."
+    echo "Running Moderne CLI transformations:"
+
+    cat ../recipes.conf
+
     echo "Applying recipes from recipes.conf..."
     while IFS= read -r recipe_cmd || [ -n "$recipe_cmd" ]; do
         # build the latest LST before applying the recipe

@@ -89,7 +89,7 @@ runs:
         
         # Write recipes configuration
         if [ -n "${{ inputs.recipes }}" ]; then
-            echo "${{ inputs.recipes }}" > recipes.conf
+            echo "${{ inputs.recipes }}" > ${{ github.action_path }}/recipes.conf
         fi
 
         ${{ github.action_path }}/sync.sh
