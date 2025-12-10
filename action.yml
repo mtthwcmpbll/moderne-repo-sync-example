@@ -41,7 +41,7 @@ runs:
         chmod +x ${{ github.action_path }}/sync.sh
         
         # Determine recipe config path
-        if [ -n "${{ inputs.recipes_config }}" ]; then
+        if [ -n "${{ inputs.recipes_config }}" ] && [ "${{ inputs.recipes_config }}" != "recipes.conf" ]; then
             cp "${{ inputs.recipes_config }}" recipes.conf
         fi
 
