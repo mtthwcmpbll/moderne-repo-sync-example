@@ -1,0 +1,20 @@
+name: Sync Repos
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * *' # Run daily at midnight
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Action Repo
+        uses: actions/checkout@v3
+
+      - name: Run Repo Sync
+        uses: ./ # Uses the action defined in the root of this repo
+        with:
+          origin_repo: 'git@github.com:mtthwcmpbll/moderne-repo-sync-origin.git'
+          destination_repo: 'git@github.com:mtthwcmpbll/moderne-repo-sync-destination.git'
+          github_token: ${{ secrets.GH_PAT }} # Requires a PAT with access to both repos

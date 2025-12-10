@@ -11,6 +11,9 @@ inputs:
     description: 'Path to the recipes configuration file'
     required: false
     default: 'recipes.conf'
+  github_token:
+    description: 'GitHub Personal Access Token for authentication'
+    required: true
 runs:
   using: "composite"
   steps:
@@ -32,6 +35,7 @@ runs:
       env:
         ORIGIN_REPO: ${{ inputs.origin_repo }}
         DEST_REPO: ${{ inputs.destination_repo }}
+        GITHUB_TOKEN: ${{ inputs.github_token }}
       run: |
         # Ensure sync.sh is executable
         chmod +x ${{ github.action_path }}/sync.sh

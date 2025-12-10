@@ -4,6 +4,21 @@ set -e
 # Configuration
 : "${ORIGIN_REPO:=git@github.com:mtthwcmpbll/moderne-repo-sync-origin.git}"
 : "${DEST_REPO:=git@github.com:mtthwcmpbll/moderne-repo-sync-destination.git}"
+
+# Configure auth if token is provided
+if [ -n "$GITHUB_TOKEN" ]; then
+    # Convert SSH URLs to HTTPS with token
+    # expected format: git@github.com:user/repo.git -> https://x-access-token:TOKEN@github.com/user/repo.git
+    
+    # Simple replacement for standard GitHub SSH URLs
+    ORIGIN_REPO=$(echo "$ORIGIN_REPO" | sed -E "s|git@github.com:|https://x-access-token:$GITHUB_TOKEN@github.com/|")
+    DEST_REPO=$(echo "$DEST_REPO" | sed -E "s|git@github.com:|https://x-access-token:$GITHUB_TOKEN@github.com/|")
+    
+    # Also configure git globally for this run to use the token for any other operations (like lfs)
+    git config --global credential.helper store
+    echo "https://x-access-token:$GITHUB_TOKEN@github.com" > ~/.git-credentials
+fi
+
 WORK_DIR="work-dir"
 
 # Helper to check for command existence
