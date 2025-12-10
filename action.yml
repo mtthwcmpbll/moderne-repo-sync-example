@@ -1,0 +1,44 @@
+name: 'Moderne Repo Sync'
+description: 'Syncs a git repository to another destination, applying Moderne transformations.'
+inputs:
+  origin_repo:
+    description: 'The URL of the origin repository'
+    required: true
+  destination_repo:
+    description: 'The URL of the destination repository'
+    required: true
+  recipes_config:
+    description: 'Path to the recipes configuration file'
+    required: false
+    default: 'recipes.conf'
+runs:
+  using: "composite"
+  steps:
+    - name: Set up Java
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+    - name: Install Moderne CLI
+      shell: bash
+      run: |
+        curl -sL https://github.com/moderneinc/moderne-cli/releases/latest/download/mod-linux-x64 -o mod
+        chmod +x mod
+        sudo mv mod /usr/local/bin/
+
+    - name: Run Sync Script
+      shell: bash
+      env:
+        ORIGIN_REPO: ${{ inputs.origin_repo }}
+        DEST_REPO: ${{ inputs.destination_repo }}
+      run: |
+        # Ensure sync.sh is executable
+        chmod +x ${{ github.action_path }}/sync.sh
+        
+        # Determine recipe config path
+        if [ -n "${{ inputs.recipes_config }}" ]; then
+            cp "${{ inputs.recipes_config }}" recipes.conf
+        fi
+
+        ${{ github.action_path }}/sync.sh
