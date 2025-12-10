@@ -20,7 +20,7 @@ on:
 env:
   DEFAULT_GLOBAL_RECIPES: |
     org.openrewrite.text.FindAndReplace -P "find=origindomain.com" -P "replace=destdomain.com"
-    org.openrewrite.hcl. search.FindAndReplaceLiteral -P "find=us-east-1" -P "replace=us-east-2"
+    org.openrewrite.hcl.search.FindAndReplaceLiteral -P "find=us-east-1" -P "replace=us-east-2"
 
 jobs:
   sync:
@@ -39,4 +39,5 @@ jobs:
           moderne_cli_version: '3.53.2'
           recipes: |
             ${{ inputs.global_recipes || env.DEFAULT_GLOBAL_RECIPES }}
-            ${{ github.event.client_payload.recipes }}
+            ${{ join(github.event.client_payload.recipes, '
+            ') }}
