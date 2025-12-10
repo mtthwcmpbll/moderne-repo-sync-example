@@ -83,13 +83,14 @@ runs:
         ORIGIN_REPO: ${{ inputs.origin_repo }}
         DEST_REPO: ${{ inputs.destination_repo }}
         GITHUB_TOKEN: ${{ inputs.github_token }}
+        RECIPES: ${{ inputs.recipes }}
       run: |
         # Ensure sync.sh is executable
         chmod +x ${{ github.action_path }}/sync.sh
         
         # Write recipes configuration
-        if [ -n "${{ inputs.recipes }}" ]; then
-            echo "${{ inputs.recipes }}" > ${{ github.action_path }}/recipes.conf
+        if [ -n "$RECIPES" ]; then
+            echo "$RECIPES" > ${{ github.action_path }}/recipes.conf
         fi
 
         ${{ github.action_path }}/sync.sh
