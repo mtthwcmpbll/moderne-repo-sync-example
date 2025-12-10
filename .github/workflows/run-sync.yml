@@ -18,4 +18,5 @@ jobs:
           origin_repo: 'git@github.com:mtthwcmpbll/moderne-repo-sync-origin.git'
           destination_repo: 'git@github.com:mtthwcmpbll/moderne-repo-sync-destination.git'
           github_token: ${{ secrets.GH_PAT }} # Requires a PAT with access to both repos
+          moderne_license: ${{ secrets.MODERNE_LICENSE }} # Requires Moderne license
           moderne_cli_version: '3.53.2'

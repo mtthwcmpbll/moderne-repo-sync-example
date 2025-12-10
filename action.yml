@@ -14,6 +14,9 @@ inputs:
   github_token:
     description: 'GitHub Personal Access Token for authentication'
     required: true
+  moderne_license:
+    description: 'The Moderne CLI license for your build and run'
+    required: true
   moderne_cli_version:
     description: 'Specific version of the Moderne CLI to use (e.g. 3.51.2)'
     required: false
@@ -64,6 +67,9 @@ runs:
 
         # Make the 'mod' script executable
         chmod +x /usr/local/bin/mod
+
+        # Licensed to Moderne Internal Q4 until January 3, 2026
+        mod config license edit ${{ inputs.moderne_license }}
 
         # Install some recipes
         mod config recipes jar install org.openrewrite:rewrite-core:LATEST
