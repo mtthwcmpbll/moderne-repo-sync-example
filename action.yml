@@ -74,8 +74,8 @@ runs:
         # Install some recipes
         mod config recipes jar install org.openrewrite:rewrite-core:LATEST
         mod config recipes jar install org.openrewrite.recipe:rewrite-static-analysis:LATEST
-        mod config recipes jar install org.openrewrite.recipe:rewrite-testing-frameworks:LATEST
         mod config recipes jar install org.openrewrite:rewrite-hcl:LATEST
+        mod config recipes jar install io.moderne.recipe:rewrite-spring:LATEST
 
     - name: Run Sync Script
       shell: bash
