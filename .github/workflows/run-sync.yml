@@ -11,6 +11,12 @@ on:
         description: 'Destination Repository URL'
         required: false
         default: 'git@github.com:mtthwcmpbll/moderne-repo-sync-destination.git'
+      global_recipes:
+        description: 'Global recipes to apply to all repository syncs'
+        required: false
+        default: |
+          org.openrewrite.text.FindAndReplace -P "find=origindomain.com" -P "replace=destdomain.com"
+          org.openrewrite.hcl.search.FindAndReplaceLiteral -P "find=us-east-1" -P "replace=us-east-2"
   repository_dispatch:
     types: [sync-trigger]
   schedule:
@@ -31,3 +37,6 @@ jobs:
           github_token: ${{ secrets.GH_PAT }} # Requires a PAT with access to both repos
           moderne_license: ${{ secrets.MODERNE_LICENSE }} # Requires Moderne license
           moderne_cli_version: '3.53.2'
+          recipes: |
+            ${{ inputs.global_recipes || 'org.openrewrite.text.FindAndReplace -P "find=origindomain.com" -P "replace=destdomain.com"\norg.openrewrite.hcl.search.FindAndReplaceLiteral -P "find=us-east-1" -P "replace=us-east-2"' }}
+            ${{ github.event.client_payload.recipes }}

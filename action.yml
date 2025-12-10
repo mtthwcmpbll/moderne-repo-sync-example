@@ -7,10 +7,10 @@ inputs:
   destination_repo:
     description: 'The URL of the destination repository'
     required: true
-  recipes_config:
-    description: 'Path to the recipes configuration file'
+  recipes:
+    description: 'Multiline string of recipes to apply (one per line)'
     required: false
-    default: 'recipes.conf'
+    default: ''
   github_token:
     description: 'GitHub Personal Access Token for authentication'
     required: true
@@ -85,9 +85,9 @@ runs:
         # Ensure sync.sh is executable
         chmod +x ${{ github.action_path }}/sync.sh
         
-        # Determine recipe config path
-        if [ -n "${{ inputs.recipes_config }}" ] && [ "${{ inputs.recipes_config }}" != "recipes.conf" ]; then
-            cp "${{ inputs.recipes_config }}" recipes.conf
+        # Write recipes configuration
+        if [ -n "${{ inputs.recipes }}" ]; then
+            echo "${{ inputs.recipes }}" > recipes.conf
         fi
 
         ${{ github.action_path }}/sync.sh
