@@ -79,7 +79,7 @@ mod git add . --last-recipe-run
 # Remove the trigger workflow from the destination to avoid pollution
 if [ -f ".github/workflows/trigger-sync.yml" ]; then
     echo "Removing trigger-sync.yml from destination..."
-    rm ".github/workflows/trigger-sync.yml"
+    git rm ".github/workflows/trigger-sync.yml"
 fi
 
 mod git commit . --last-recipe-run -m "Apply Moderne transformations"
