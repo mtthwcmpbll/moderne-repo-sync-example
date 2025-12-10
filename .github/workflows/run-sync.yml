@@ -2,6 +2,17 @@ name: Sync Repos
 
 on:
   workflow_dispatch:
+    inputs:
+      origin_repo:
+        description: 'Origin Repository URL'
+        required: false
+        default: 'git@github.com:mtthwcmpbll/moderne-repo-sync-origin.git'
+      destination_repo:
+        description: 'Destination Repository URL'
+        required: false
+        default: 'git@github.com:mtthwcmpbll/moderne-repo-sync-destination.git'
+  repository_dispatch:
+    types: [sync-trigger]
   schedule:
     - cron: '0 0 * * *' # Run daily at midnight
 
@@ -15,8 +26,8 @@ jobs:
       - name: Run Repo Sync
         uses: ./ # Uses the action defined in the root of this repo
         with:
-          origin_repo: 'git@github.com:mtthwcmpbll/moderne-repo-sync-origin.git'
-          destination_repo: 'git@github.com:mtthwcmpbll/moderne-repo-sync-destination.git'
+          origin_repo: ${{ github.event.client_payload.origin_repo || inputs.origin_repo }}
+          destination_repo: ${{ github.event.client_payload.destination_repo || inputs.destination_repo }}
           github_token: ${{ secrets.GH_PAT }} # Requires a PAT with access to both repos
           moderne_license: ${{ secrets.MODERNE_LICENSE }} # Requires Moderne license
           moderne_cli_version: '3.53.2'
