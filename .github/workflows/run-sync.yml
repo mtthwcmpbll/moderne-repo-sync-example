@@ -19,8 +19,11 @@ on:
           org.openrewrite.hcl.search.FindAndReplaceLiteral -P "find=us-east-1" -P "replace=us-east-2"
   repository_dispatch:
     types: [sync-trigger]
-  schedule:
-    - cron: '0 0 * * *' # Run daily at midnight
+
+env:
+  DEFAULT_GLOBAL_RECIPES: |
+    org.openrewrite.text.FindAndReplace -P "find=origindomain.com" -P "replace=destdomain.com"
+    org.openrewrite.hcl. search.FindAndReplaceLiteral -P "find=us-east-1" -P "replace=us-east-2"
 
 jobs:
   sync:
@@ -38,5 +41,5 @@ jobs:
           moderne_license: ${{ secrets.MODERNE_LICENSE }} # Requires Moderne license
           moderne_cli_version: '3.53.2'
           recipes: |
-            ${{ inputs.global_recipes || 'org.openrewrite.text.FindAndReplace -P "find=origindomain.com" -P "replace=destdomain.com"\norg.openrewrite.hcl.search.FindAndReplaceLiteral -P "find=us-east-1" -P "replace=us-east-2"' }}
+            ${{ inputs.global_recipes || env.DEFAULT_GLOBAL_RECIPES }}
             ${{ github.event.client_payload.recipes }}

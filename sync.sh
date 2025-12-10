@@ -55,10 +55,14 @@ done
 # Run Moderne CLI transformations
 rm $HOME/.moderne/cli/maven-cache.cache 2>/dev/null || true
 
+echo "Workspace files:"
+echo "$(ls -la ../)"
+echo "$(ls -la .)"
+echo "Recipes to run:"
+cat "../recipes.conf"
+
 if [ -f "../recipes.conf" ]; then
     echo "Running Moderne CLI transformations:"
-
-    cat ../recipes.conf
 
     echo "Applying recipes from recipes.conf..."
     while IFS= read -r recipe_cmd || [ -n "$recipe_cmd" ]; do
