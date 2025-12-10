@@ -14,9 +14,6 @@ on:
       global_recipes:
         description: 'Global recipes to apply to all repository syncs'
         required: false
-        default: |
-          org.openrewrite.text.FindAndReplace -P "find=origindomain.com" -P "replace=destdomain.com"
-          org.openrewrite.hcl.search.FindAndReplaceLiteral -P "find=us-east-1" -P "replace=us-east-2"
   repository_dispatch:
     types: [sync-trigger]
 
