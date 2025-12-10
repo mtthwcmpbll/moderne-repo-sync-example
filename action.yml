@@ -65,6 +65,10 @@ runs:
         # Make the 'mod' script executable
         chmod +x /usr/local/bin/mod
 
+        # Install some recipes
+        mod config recipes jar install org.openrewrite:rewrite-core:LATEST
+        mod config recipes jar install org.openrewrite:rewrite-hcl:LATEST
+
     - name: Run Sync Script
       shell: bash
       env:
