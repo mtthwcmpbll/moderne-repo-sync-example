@@ -85,6 +85,9 @@ if [ -f ".github/workflows/trigger-sync.yml" ]; then
     git rm ".github/workflows/trigger-sync.yml"
 fi
 
+echo "Committing the following changes:"
+git status
+
 mod git commit . --last-recipe-run -m "Apply Moderne transformations"
 
 # Push to destination
