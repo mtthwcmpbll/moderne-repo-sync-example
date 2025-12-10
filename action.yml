@@ -77,6 +77,10 @@ runs:
         mod config recipes jar install org.openrewrite:rewrite-hcl:LATEST
         mod config recipes jar install io.moderne.recipe:rewrite-spring:LATEST
 
+        # Output a complete list of installed recipes to the log
+        mod config recipes export csv /tmp/all-recipes.csv
+        cat /tmp/all-recipes.csv
+
     - name: Run Sync Script
       shell: bash
       env:
