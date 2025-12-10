@@ -62,26 +62,46 @@ echo "Recipes to run:"
 cat "../recipes.conf"
 
 if [ -f "../recipes.conf" ]; then
-    echo "Running Moderne CLI transformations:"
+    # Create a transformation branch
+    CURRENT_BRANCH=$(git branch --show-current)
+    TRANSFORMATION_BRANCH="moderne/transformation-$CURRENT_BRANCH"
+    echo "Creating transformation branch: $TRANSFORMATION_BRANCH"
+    git checkout -b "$TRANSFORMATION_BRANCH"
 
     echo "Applying recipes from recipes.conf..."
     while IFS= read -r recipe_cmd || [ -n "$recipe_cmd" ]; do
         # build the latest LST before applying the recipe
+        echo "Building LSTs..."
         mod build .
 
         # Skip empty lines and comments
         [[ -z "$recipe_cmd" || "$recipe_cmd" =~ ^# ]] && continue
         
         echo "Running recipe: $recipe_cmd"
-        # We need to eval here to correctly handle quotes in arguments
-        eval "mod run . --recipe $recipe_cmd"
+        mod run . --recipe "$recipe_cmd"
+
+        # Apply changes and add to index
+        mod git apply . --last-recipe-run
+        mod git add . --last-recipe-run
+        
+        # Commit passing the recipe as the message (if there are changes)
+        if ! git diff --cached --quiet; then
+             mod git commit . --last-recipe-run -m "Applied recipe: $recipe_cmd"
+        else
+             echo "No changes result from recipe: $recipe_cmd"
+        fi
     done < "../recipes.conf"
+    
+    # Return to original branch
+    git checkout "$CURRENT_BRANCH"
+    
+    # Squash merge the transformation branch
+    echo "Squash merging transformation branch..."
+    git merge --squash "$TRANSFORMATION_BRANCH"
+    
 else
-    echo "Warning: recipes.conf not found. Skipping recipe application."
+    echo "No recipes.conf found, skipping transformations."
 fi
-# Apply changes and commit using Moderne CLI
-mod git apply . --last-recipe-run
-mod git add . --last-recipe-run
 
 # Remove the trigger workflow from the destination to avoid pollution
 if [ -f ".github/workflows/trigger-sync.yml" ]; then
@@ -92,7 +112,8 @@ fi
 echo "Committing the following changes:"
 git status
 
-mod git commit . --last-recipe-run -m "Apply Moderne transformations"
+# Commit the squash merge (and potentially the workflow deletion)
+git commit -m "Apply Moderne transformations"
 
 # Push to destination
 echo "Pushing to destination..."
