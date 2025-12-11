@@ -99,6 +99,10 @@ if [ -f "../recipes.conf" ]; then
     echo "Squash merging transformation branch..."
     git merge --squash "$TRANSFORMATION_BRANCH"
     
+    # Delete the transformation branch so it doesn't get pushed
+    echo "Deleting transformation branch..."
+    git branch -D "$TRANSFORMATION_BRANCH"
+    
 else
     echo "No recipes.conf found, skipping transformations."
 fi
