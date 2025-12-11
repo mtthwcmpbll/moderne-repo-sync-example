@@ -7,6 +7,14 @@ inputs:
   destination_repo:
     description: 'The URL of the destination repository'
     required: true
+  git_user_name:
+    description: 'The name to use for git commits'
+    required: false
+    default: 'Moderne Repo Sync'
+  git_user_email:
+    description: 'The email to use for git commits'
+    required: false
+    default: 'repo-sync@example.com'
   recipes:
     description: 'Multiline string of recipes to apply (one per line)'
     required: false
@@ -32,6 +40,15 @@ runs:
       with:
         java-version: '17'
         distribution: 'temurin'
+    
+    - name: Configure Git for Sync
+      shell: bash
+      env:
+        GIT_USERNAME: ${{ inputs.git_user_name }}
+        GIT_EMAIL: ${{ inputs.git_user_email }}
+      run: |
+        git config --global user.name "${GIT_USERNAME}"
+        git config --global user.email "${GIT_EMAIL}"
 
     - name: Install Moderne CLI
       shell: bash
