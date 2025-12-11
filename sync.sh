@@ -52,72 +52,87 @@ for remote in $(git branch -r | grep -v '\->'); do
     fi
 done
 
-# Run Moderne CLI transformations
-rm $HOME/.moderne/cli/maven-cache.cache 2>/dev/null || true
+# Run transformations on every branch
+# Get list of all local branches
+# We use 'git for-each-ref' to get a clean list of refs/heads/
+BRANCHES=$(git for-each-ref --format='%(refname:short)' refs/heads/)
 
-echo "Workspace files:"
-echo "$(ls -la ../)"
-echo "$(ls -la .)"
-echo "Recipes to run:"
-cat "../recipes.conf"
+for BRANCH in $BRANCHES; do
+    echo "Processing branch: $BRANCH"
+    git checkout "$BRANCH"
 
-if [ -f "../recipes.conf" ]; then
-    # Create a transformation branch
-    CURRENT_BRANCH=$(git branch --show-current)
-    TRANSFORMATION_BRANCH="moderne/transformation-$CURRENT_BRANCH"
-    echo "Creating transformation branch: $TRANSFORMATION_BRANCH"
-    git checkout -b "$TRANSFORMATION_BRANCH"
-
-    echo "Applying recipes from recipes.conf..."
-    while IFS= read -r recipe_cmd || [ -n "$recipe_cmd" ]; do
-        # build the latest LST before applying the recipe
-        echo "Building LSTs..."
-        mod build .
-
-        # Skip empty lines and comments
-        [[ -z "$recipe_cmd" || "$recipe_cmd" =~ ^# ]] && continue
+    # Run Moderne CLI transformations
+    rm $HOME/.moderne/cli/maven-cache.cache 2>/dev/null || true
+    
+    echo "Workspace files:"
+    echo "$(ls -la ../)"
+    echo "$(ls -la .)"
+    echo "Recipes to run:"
+    cat "../recipes.conf"
+    
+    if [ -f "../recipes.conf" ]; then
+        # Create a transformation branch
+        TRANSFORMATION_BRANCH="moderne/transformation-$BRANCH"
+        echo "Creating transformation branch: $TRANSFORMATION_BRANCH"
+        git checkout -b "$TRANSFORMATION_BRANCH"
+    
+        echo "Applying recipes from recipes.conf..."
+        while IFS= read -r recipe_cmd || [ -n "$recipe_cmd" ]; do
+            # build the latest LST before applying the recipe
+            echo "Building LSTs..."
+            mod build .
+    
+            # Skip empty lines and comments
+            [[ -z "$recipe_cmd" || "$recipe_cmd" =~ ^# ]] && continue
+            
+            echo "Running recipe: $recipe_cmd"
+            eval "mod run . --recipe $recipe_cmd"
+    
+            # Apply changes and add to index
+            mod git apply . --last-recipe-run
+            mod git add . --last-recipe-run
+            
+            # Commit passing the recipe as the message (if there are changes)
+            if ! git diff --cached --quiet; then
+                 mod git commit . --last-recipe-run -m "Applied recipe: $recipe_cmd"
+            else
+                 echo "No changes result from recipe: $recipe_cmd"
+            fi
+        done < "../recipes.conf"
         
-        echo "Running recipe: $recipe_cmd"
-        eval "mod run . --recipe $recipe_cmd"
-
-        # Apply changes and add to index
-        mod git apply . --last-recipe-run
-        mod git add . --last-recipe-run
+        # Return to original branch
+        git checkout "$BRANCH"
         
-        # Commit passing the recipe as the message (if there are changes)
-        if ! git diff --cached --quiet; then
-             mod git commit . --last-recipe-run -m "Applied recipe: $recipe_cmd"
-        else
-             echo "No changes result from recipe: $recipe_cmd"
-        fi
-    done < "../recipes.conf"
+        # Squash merge the transformation branch
+        echo "Squash merging transformation branch..."
+        git merge --squash "$TRANSFORMATION_BRANCH"
+        
+        # Delete the transformation branch so it doesn't get pushed
+        echo "Deleting transformation branch..."
+        git branch -D "$TRANSFORMATION_BRANCH"
+        
+    else
+        echo "No recipes.conf found, skipping transformations."
+    fi
     
-    # Return to original branch
-    git checkout "$CURRENT_BRANCH"
+    # Remove the trigger workflow from the destination to avoid pollution
+    if [ -f ".github/workflows/trigger-sync.yml" ]; then
+        echo "Removing trigger-sync.yml from destination..."
+        git rm ".github/workflows/trigger-sync.yml"
+    fi
     
-    # Squash merge the transformation branch
-    echo "Squash merging transformation branch..."
-    git merge --squash "$TRANSFORMATION_BRANCH"
+    echo "Committing the following changes on $BRANCH:"
+    git status
     
-    # Delete the transformation branch so it doesn't get pushed
-    echo "Deleting transformation branch..."
-    git branch -D "$TRANSFORMATION_BRANCH"
-    
-else
-    echo "No recipes.conf found, skipping transformations."
-fi
+    # Commit the squash merge (and potentially the workflow deletion)
+    # We check if there are changes to commit to avoid empty commit errors if recipes did nothing
+    if ! git diff --cached --quiet; then
+        git commit -m "Apply Moderne transformations"
+    else
+        echo "No changes to commit for branch $BRANCH."
+    fi
 
-# Remove the trigger workflow from the destination to avoid pollution
-if [ -f ".github/workflows/trigger-sync.yml" ]; then
-    echo "Removing trigger-sync.yml from destination..."
-    git rm ".github/workflows/trigger-sync.yml"
-fi
-
-echo "Committing the following changes:"
-git status
-
-# Commit the squash merge (and potentially the workflow deletion)
-git commit -m "Apply Moderne transformations"
+done
 
 # Push to destination
 echo "Pushing to destination..."
