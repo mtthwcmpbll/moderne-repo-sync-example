@@ -78,7 +78,7 @@ if [ -f "../recipes.conf" ]; then
         [[ -z "$recipe_cmd" || "$recipe_cmd" =~ ^# ]] && continue
         
         echo "Running recipe: $recipe_cmd"
-        mod run . --recipe "$recipe_cmd"
+        eval "mod run . --recipe $recipe_cmd"
 
         # Apply changes and add to index
         mod git apply . --last-recipe-run
